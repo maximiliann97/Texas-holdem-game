@@ -21,16 +21,11 @@ class VerticalMenuBar(QWidget):
         self.setLayout(vbox)
 
 
-class PlayerMoney(QStatusBar):
+class PlayerMoney(QLabel):
     def __init__(self, starting_money):
         super().__init__()
         self.starting_money = starting_money
-
-
-    def win_or_lose_money(self, starting_money):
-
-
-
+        self.setText(starting_money)
 
 
 class MyBox(QGroupBox):
@@ -41,6 +36,7 @@ class MyBox(QGroupBox):
         hbox.addStretch(1)
         hbox.addWidget(VerticalMenuBar(['Bet', 'Call', 'Fold']))
 
+        hbox.addWidget(PlayerMoney("Money\n 200"))
         self.setLayout(hbox)
 
         self.setGeometry(300, 300, 300, 150)
