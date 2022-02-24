@@ -54,22 +54,25 @@ class PlayerView(QGroupBox):
         vbox = QVBoxLayout()
         vbox.addStretch(1)
         vbox.addWidget(label)
+
+        self.setLayout(vbox)
         #vbox.addWidget(card_view)
-
-
-
-
 
 
 class MyWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-
-        tool_bar = ToolBar()
-        player_view = PlayerView()
-        dockWidget = QDockWidget(player_view)
-        self.setCentralWidget(tool_bar)
-        self.addDockWidget(Qt.TopDockWidgetArea, dockWidget)
+        widget = QWidget()
+        layout = QHBoxLayout()
+        layout.addWidget(PlayerView())
+        layout.addWidget(PlayerView())
+        widget.setLayout(layout)
+        self.setCentralWidget(widget)
+#        tool_bar = ToolBar()
+#        player_view = PlayerView()
+#        dockWidget = QDockWidget(player_view)
+#        self.setCentralWidget(tool_bar)
+#        self.addDockWidget(Qt.TopDockWidgetArea, dockWidget)
 
 
 win = MyWindow()
