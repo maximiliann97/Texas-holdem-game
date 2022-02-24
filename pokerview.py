@@ -7,7 +7,7 @@ import sys
 qt_app = QApplication(sys.argv)
 
 
-class VerticalMenuBar(QWidget):
+class VerticalActionBar(QWidget):
     def __init__(self, labels):
         super().__init__()
         self.labels = labels
@@ -32,15 +32,18 @@ class PlayerMoneyView(QLabel):
      #   self.setText(f"€{new_value}")
 
 
-class ToolBar(QGroupBox):
+class ActionBar(QGroupBox):
     def __init__(self):
         super().__init__()
+        label1 = QLabel("Turn")
+        label2 = QLabel("Blind")
+        vbox = QVBoxLayout()
+        vbox.addStretch(1)
+        vbox.addWidget(label1)
+        vbox.addWidget(label2)
+        vbox.addWidget(VerticalActionBar(['Bet', 'Call', 'Fold']))
 
-        hbox = QHBoxLayout()
-        hbox.addStretch(1)
-        hbox.addWidget(VerticalMenuBar(['Bet', 'Call', 'Fold']))
-
-        self.setLayout(hbox)
+        self.setLayout(vbox)
 
         self.setGeometry(300, 300, 300, 150)
 
@@ -51,28 +54,47 @@ class PlayerView(QGroupBox):
 
         label = QLabel()
         label.setText("Money")
+
         vbox = QVBoxLayout()
         vbox.addStretch(1)
         vbox.addWidget(label)
 
         self.setLayout(vbox)
-        #vbox.addWidget(card_view)
+
+
+class GameView(QWidget):
+    def __init__(self):
+        super().__init__()
+        hbox = QHBoxLayout()
+        label = QLabel("Table Cards")
+        hbox.addWidget(label)
+
+        self.setLayout(hbox)
+
+
+class GraphicView(QGroupBox):
+    def __init__(self):
+        super().__init__()
+
+        vbox = QVBoxLayout()
+        vbox.addWidget(PlayerView())
+        vbox.addWidget(GameView())
+        vbox.addWidget(PlayerView())
+        vbox.addStretch(1)
+
+        self.setLayout(vbox)
 
 
 class MyWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         widget = QWidget()
+
         layout = QHBoxLayout()
-        layout.addWidget(PlayerView())
-        layout.addWidget(PlayerView())
+        layout.addWidget(GraphicView())
+        layout.addWidget(ActionBar())
         widget.setLayout(layout)
         self.setCentralWidget(widget)
-#        tool_bar = ToolBar()
-#        player_view = PlayerView()
-#        dockWidget = QDockWidget(player_view)
-#        self.setCentralWidget(tool_bar)
-#        self.addDockWidget(Qt.TopDockWidgetArea, dockWidget)
 
 
 win = MyWindow()
