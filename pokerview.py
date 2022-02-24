@@ -21,27 +21,58 @@ class VerticalMenuBar(QWidget):
         self.setLayout(vbox)
 
 
-class PlayerMoney(QLabel):
-    def __init__(self, starting_money):
-        super().__init__()
-        self.starting_money = starting_money
-        self.setText(starting_money)
-
-
-class MyBox(QGroupBox):
+class PlayerMoneyView(QLabel):
     def __init__(self):
-        super().__init__("Poker Table")
+        super().__init__()
+        #self.money_model = money_model
+        #self.starting_money = starting_money
+        self.setText('placeholder')
+
+    #def update_label(self, new_value):
+     #   self.setText(f"€{new_value}")
+
+
+class ToolBar(QGroupBox):
+    def __init__(self):
+        super().__init__()
 
         hbox = QHBoxLayout()
         hbox.addStretch(1)
         hbox.addWidget(VerticalMenuBar(['Bet', 'Call', 'Fold']))
 
-        hbox.addWidget(PlayerMoney("Money\n 200"))
         self.setLayout(hbox)
 
         self.setGeometry(300, 300, 300, 150)
 
-win = MyBox()
+
+class PlayerView(QGroupBox):
+    def __init__(self):
+        super().__init__("Player's name")
+
+        label = QLabel()
+        label.setText("Money")
+        vbox = QVBoxLayout()
+        vbox.addStretch(1)
+        vbox.addWidget(label)
+        #vbox.addWidget(card_view)
+
+
+
+
+
+
+class MyWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+
+        tool_bar = ToolBar()
+        player_view = PlayerView()
+        dockWidget = QDockWidget(player_view)
+        self.setCentralWidget(tool_bar)
+        self.addDockWidget(Qt.TopDockWidgetArea, dockWidget)
+
+
+win = MyWindow()
 win.show()
 qt_app.exec_()
 
