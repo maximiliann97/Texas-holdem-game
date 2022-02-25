@@ -3,11 +3,8 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtSvg import *
 import cardlib
-import abc
 import sys
-
-
-qt_app = QApplication(sys.argv)
+from pokermodel import *
 
 
 class TableScene(QGraphicsScene):
@@ -16,20 +13,6 @@ class TableScene(QGraphicsScene):
         super().__init__()
         self.tile = QPixmap('cards/table.png')
         self.setBackgroundBrush(QBrush(self.tile))
-
-
-class CardModel(QObject):
-    """ Base class that described what is expected from the CardView widget """
-
-    new_cards = pyqtSignal()  #: Signal should be emited when cards change.
-
-    @abc.abstractmethod
-    def __iter__(self):
-        """Returns an iterator of card objects"""
-
-    @abc.abstractmethod
-    def flipped(self):
-        """Returns true of cards should be drawn face down"""
 
 
 class CardItem(QGraphicsSvgItem):
@@ -52,54 +35,6 @@ def read_cards():
             key = (value, suit)  # I'm choosing this tuple to be the key for this dictionary
             all_cards[key] = QSvgRenderer('cards/' + file + '.svg')
     return all_cards
-
-
-all_cards = read_cards()
-
-
-# A trivial card class (you should use the stuff you made in your library instead!
-class MySimpleCard:
-    def __init__(self, value, suit):
-        self.value = value
-        self.suit = suit
-
-    def get_value(self):
-        return self.value
-
-
-# You have made a class similar to this (hopefully):
-class Hand:
-    def __init__(self):
-        # Lets use some hardcoded values for most of this to start with
-        self.cards = [MySimpleCard(13, 'H'), MySimpleCard(7, 'D'), MySimpleCard(13, 'S')]
-
-    def add_card(self, card):
-        self.cards.append(card)
-
-
-class HandModel(Hand, CardModel):
-    def __init__(self):
-        Hand.__init__(self)
-        CardModel.__init__(self)
-        # Additional state needed by the UI
-        self.flipped_cards = False
-
-    def __iter__(self):
-        return iter(self.cards)
-
-    def flip(self):
-        # Flips over the cards (to hide them)
-        self.flipped_cards = not self.flipped_cards
-        self.new_cards.emit()  # something changed, better emit the signal!
-
-    def flipped(self):
-        # This model only flips all or no cards, so we don't care about the index.
-        # Might be different for other games though!
-        return self.flipped_cards
-
-    def add_card(self, card):
-        super().add_card(card)
-        self.new_cards.emit()  # something changed, better emit the signal!
 
 
 class CardView(QGraphicsView):
@@ -198,12 +133,14 @@ class PlayerMoneyView(QLabel):
 class ActionBar(QGroupBox):
     def __init__(self):
         super().__init__()
-        label1 = QLabel("Turn")
-        label2 = QLabel("Blind")
+        label1 = QLabel("Pot")
+        label2 = QLabel("Turn")
+        label3 = QLabel("Blind")
         vbox = QVBoxLayout()
         vbox.addStretch(1)
         vbox.addWidget(label1)
         vbox.addWidget(label2)
+        vbox.addWidget(label3)
         vbox.addWidget(VerticalActionBar(['Bet', 'Call', 'Fold']))
 
         self.setLayout(vbox)
@@ -214,28 +151,32 @@ class ActionBar(QGroupBox):
 
 
 class PlayerView(QGroupBox):
-    def __init__(self):
+    def __init__(self, player: Player):
         super().__init__("Player's name")
-
-        label = QLabel()
-        label.setText("Money")
-
-        hand = HandModel()
-        card_view = CardView(hand, card_spacing=50)
-
+        self.label = QLabel()
+        card_view = CardView(player.hand, card_spacing=50)
         vbox = QVBoxLayout()
         vbox.addStretch(1)
-        vbox.addWidget(label)
+        vbox.addWidget(self.label)
         vbox.addWidget(card_view)
 
         self.setLayout(vbox)
+
+    def update_money(self):
+        self.label.setText("Money\n" + str(self.player.money()))
+
+
+
+
+
 
 
 class GameView(QWidget):
     def __init__(self):
         super().__init__()
         hbox = QHBoxLayout()
-        label = QLabel("Table Cards")
+        hand = HandModel()
+        label = CardView(hand)
         hbox.addWidget(label)
 
         self.setLayout(hbox)
@@ -255,17 +196,18 @@ class GraphicView(QGroupBox):
 
 
 class MyWindow(QMainWindow):
-    def __init__(self):
+    def __init__(self, game: TexasHoldEm):
         super().__init__()
         widget = QWidget()
 
         layout = QHBoxLayout()
-        layout.addWidget(GraphicView())
-        layout.addWidget(ActionBar())
+        layout.addWidget(GraphicView(game))
+        layout.addWidget(ActionBar(game))
         widget.setLayout(layout)
         self.setCentralWidget(widget)
 
-
+# pokergame.py:
+qt_app = QApplication(sys.argv)
 win = MyWindow()
 win.show()
 qt_app.exec_()
