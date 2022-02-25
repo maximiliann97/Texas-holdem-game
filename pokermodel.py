@@ -68,10 +68,9 @@ class Player(QObject):
         self.name = name
         self.money = 200        #amount player starts with
 
-    def money(self):
-        return self.money
 
-    def change_money(self):
+
+
         
 
 
@@ -80,20 +79,23 @@ class Player(QObject):
 
 
 
-class TableModel(CardModel):
-    def flipped(self):
-        return False
+# class TableModel(CardModel):
+#     def flipped(self):
+#         return False
 
 
 class TexasHoldEm(QObject):
     def __init__(self, names):
         super.__init__()
         self.players = [Player(name, 1000) for name in names]
-        self.deck = ...
-        self.pot = ...
+        self.deck = cardlib.StandardDeck()
+        self.pot = 0
         self.active_player = 0
 
     new_value = pyqtSignal()
+
+    def pot(self):
+        return self.pot
 
     def new_round(self):
         self.pot = 0

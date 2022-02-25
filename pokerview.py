@@ -4,6 +4,8 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtSvg import *
 import cardlib
 import sys
+
+import pokermodel
 from pokermodel import *
 
 
@@ -106,17 +108,26 @@ class CardView(QGraphicsView):
 
 
 class VerticalActionBar(QWidget):
-    def __init__(self, labels):
+    def __init__(self, labels, game: TexasHoldEm):
         super().__init__()
-        self.labels = labels
+        self.game = game
+        game.new_value.connect(self.update_value)
+
+        self.bet = QPushButton("Bet")
+        self.call = QPushButton("Call")
+        self.fold = QPushButton("Fold")
         vbox = QVBoxLayout()
         vbox.addStretch(1)
 
-        for label in labels:
-            button = QPushButton(label)
-            button.clicked.connect(lambda checked, label=label: print(label))
-            vbox.addWidget(button)
         self.setLayout(vbox)
+
+        # Controller part
+        def actions():
+            action_list = [game.bet(), game.call(), game.fold()]
+
+        for action in action_list:
+            self.action.clicked.connect(actions)
+
 
 
 class PlayerMoneyView(QLabel):
@@ -133,19 +144,20 @@ class PlayerMoneyView(QLabel):
 class ActionBar(QGroupBox):
     def __init__(self):
         super().__init__()
-        label1 = QLabel("Pot")
-        label2 = QLabel("Turn")
-        label3 = QLabel("Blind")
+        label1 = QLabel()
+        label2 = QLabel()
         vbox = QVBoxLayout()
         vbox.addStretch(1)
         vbox.addWidget(label1)
         vbox.addWidget(label2)
-        vbox.addWidget(label3)
-        vbox.addWidget(VerticalActionBar(['Bet', 'Call', 'Fold']))
+        vbox.addWidget(VerticalActionBar())
 
-        self.setLayout(vbox)
+    self.setLayout(vbox)
 
-        self.setGeometry(300, 300, 300, 150)
+    self.setGeometry(300, 300, 300, 150)
+
+    def update_pot(self):
+        self.label1.setText("Pot\n" + str(self.game.pot()))
 
 ####
 
@@ -201,7 +213,7 @@ class MyWindow(QMainWindow):
         widget = QWidget()
 
         layout = QHBoxLayout()
-        layout.addWidget(GraphicView(game))
+       # layout.addWidget(GraphicView(TexasHoldEm))
         layout.addWidget(ActionBar(game))
         widget.setLayout(layout)
         self.setCentralWidget(widget)
