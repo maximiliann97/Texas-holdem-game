@@ -119,7 +119,9 @@ class ActionBar(QGroupBox):
         self.betting_amount = QSpinBox()
         self.betting_amount.setMaximum(1000)
         self.betting_amount.setMinimum(50)
+
         vbox = QVBoxLayout()
+
         vbox.addWidget(self.pot)
         vbox.addWidget(self.bet)
         vbox.addWidget(self.call)
@@ -132,6 +134,7 @@ class ActionBar(QGroupBox):
         # Connect logic
         self.game = game
         game.data_changed.connect(self.update_pot)
+
         self.update_pot()
 
         def bet():
@@ -148,8 +151,6 @@ class ActionBar(QGroupBox):
 
     def update_pot(self):
         self.pot.setText("Pot\n" + str(self.game.pot))
-
-
 
 
 class PlayerView(QGroupBox):
@@ -170,6 +171,7 @@ class PlayerView(QGroupBox):
 
         # Connect logic:
         self.game = game
+        game.data_changed.connect(self.update_money)
         self.update_money()
 
     def update_money(self):

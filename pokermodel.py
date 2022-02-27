@@ -118,8 +118,7 @@ class TexasHoldEm(QObject):
         self.players[self.active_player].set_active(True)
         self.data_changed.emit()
 
-
-    def call(self, amount):
+    def call(self, amount: int):
         self.pot += amount
         self.player_money -= amount
         self.players[self.active_player].set_active(False)
@@ -128,7 +127,4 @@ class TexasHoldEm(QObject):
         self.data_changed.emit()
 
     def fold(self):
-        self.players[self.active_player].set_active(False)
-        self.active_player = (self.active_player + 1) % len(self.players)
-        self.players[self.active_player].set_active(True)
-        self.data_changed.emit()
+        pass
