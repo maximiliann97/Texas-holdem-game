@@ -112,15 +112,23 @@ class TexasHoldEm(QObject):
 
     def bet(self, amount: int):
         self.pot += amount
-        self.player_money += amount
+        self.player_money -= amount
         self.players[self.active_player].set_active(False)
         self.active_player = (self.active_player + 1) % len(self.players)
         self.players[self.active_player].set_active(True)
         self.data_changed.emit()
 
 
-    def call(self):
-        pass
+    def call(self, amount):
+        self.pot += amount
+        self.player_money -= amount
+        self.players[self.active_player].set_active(False)
+        self.active_player = (self.active_player + 1) % len(self.players)
+        self.players[self.active_player].set_active(True)
+        self.data_changed.emit()
 
     def fold(self):
-        pass
+        self.players[self.active_player].set_active(False)
+        self.active_player = (self.active_player + 1) % len(self.players)
+        self.players[self.active_player].set_active(True)
+        self.data_changed.emit()

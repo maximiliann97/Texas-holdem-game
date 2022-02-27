@@ -135,7 +135,7 @@ class ActionBar(QGroupBox):
         self.bet.clicked.connect(bet)
 
         def call():
-            game.call()
+            game.call(self.game.pot)
         self.call.clicked.connect(call)
 
         def fold():
