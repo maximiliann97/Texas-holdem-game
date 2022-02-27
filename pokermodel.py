@@ -1,6 +1,6 @@
 from PyQt5.QtCore import *
 import abc
-import cardlib
+from cardlib import *
 
 
 class CardModel(QObject):
@@ -17,29 +17,9 @@ class CardModel(QObject):
         """Returns true of cards should be drawn face down"""
 
 
-# A trivial card class (you should use the stuff you made in your library instead!
-# class MySimpleCard:
-#     def __init__(self, value, suit):
-#         self.value = value
-#         self.suit = suit
-#
-#     def get_value(self):
-#         return self.value
-
-
-# You have made a class similar to this (hopefully):
-# class Hand:
-#     def __init__(self):
-#         # Lets use some hardcoded values for most of this to start with
-#         self.cards = [MySimpleCard(13, 'H'), MySimpleCard(7, 'D'), MySimpleCard(13, 'S')]
-#
-#     def add_card(self, card):
-#         self.cards.append(card)
-
-
-class HandModel(cardlib.Hand, CardModel):
+class HandModel(Hand, CardModel):
     def __init__(self):
-        cardlib.Hand.__init__(self)
+        Hand.__init__(self)
         CardModel.__init__(self)
         # Additional state needed by the UI
         self.flipped_cards = False
@@ -69,47 +49,57 @@ class Player(QObject):
     def __init__(self, name):
         super().__init__()
         self.name = name
+        self.hand = HandModel()
 
     def set_active(self, active):
         self.active = active
         self.data_changed.emit()
 
 
-# class TableModel(CardModel):
-#     def flipped(self):
-#         return False
-
-
 class TexasHoldEm(QObject):
 
     data_changed = pyqtSignal()
-
     game_message = pyqtSignal((str,))
 
     def __init__(self, players):
         super().__init__()
-        self.running = False
         self.players = players
         self.player_money = [1000, 1000]
-        self.deck = cardlib.StandardDeck()
-        self.player_hands = []
-        self.pot = 0
+        self.new_round()
+
+    def new_round(self):
         self.active_player = 0
+        self.pot = 0
+        self.table = []
+        self.check_stepper = 0
+        self.deck = StandardDeck()
+        self.deck.shuffle()
+        self.players[self.active_player].set_active(True)
+        self.data_changed.emit()
+
+        for player in self.players:
+            player.hand.cards.clear()
+            player.hand.add_card(self.deck.draw())
+            player.hand.add_card(self.deck.draw())
+            print(player.hand)
+
+    def deal(self, number_of_cards: int):
+        for card in range(number_of_cards):
+            self.table.append(self.deck.draw())
+        self.data_changed.emit()
+        self.check_stepper += 1
+
+    def check(self):
+        if self.check_stepper == 0:
+            self.deal(3)
+        elif self.check_stepper == 1 or self.check_stepper == 2:
+            self.deal(1)
 
     def player_money(self):
         return self.player_money
 
     def pot(self):
         return self.pot
-
-    def new_round(self):
-        if self.running:
-            self.game_message.emit("A new round has already begun")
-        self.running = True
-        self.active_player = 0
-        self.pot = 0
-        self.players[self.active_player].set_active(True)
-        self.data_changed.emit()
 
     def bet(self, amount: int):
         self.pot += amount
@@ -132,8 +122,13 @@ class TexasHoldEm(QObject):
         self.active_player = (self.active_player + 1) % len(self.players)
         self.players[self.active_player].set_active(True)
         self.player_money[self.active_player] += self.pot
-        self.pot = 0
         self.data_changed.emit()
+        self.new_round()
+
+
+
+
+
 
 
 
