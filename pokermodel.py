@@ -92,6 +92,7 @@ class TexasHoldEm(QObject):
         self.players = players
         self.player_money = [1000, 1000]
         self.deck = cardlib.StandardDeck()
+        self.player_hands = []
         self.pot = 0
         self.active_player = 0
 
@@ -127,4 +128,13 @@ class TexasHoldEm(QObject):
         self.data_changed.emit()
 
     def fold(self):
-        pass
+        self.players[self.active_player].set_active(False)
+        self.active_player = (self.active_player + 1) % len(self.players)
+        self.players[self.active_player].set_active(True)
+        self.player_money[self.active_player] += self.pot
+        self.pot = 0
+        self.data_changed.emit()
+
+
+
+

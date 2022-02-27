@@ -102,7 +102,7 @@ class Hand:
             del self.cards[index]
 
     def sort(self):
-        return self.cards.sort()
+        self.cards.sort()
 
     def best_poker_hand(self, cards):
         return PokerHand(self.cards + cards)

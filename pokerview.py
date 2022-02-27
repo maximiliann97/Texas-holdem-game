@@ -158,6 +158,7 @@ class PlayerView(QGroupBox):
         super().__init__(player.name)
         self.player = player
         self.labels = [QLabel(), QLabel()]
+        self.hand = HandModel()
 
         vbox = QVBoxLayout()
         self.setLayout(vbox)
@@ -165,7 +166,7 @@ class PlayerView(QGroupBox):
         vbox.addWidget(self.labels[1])
         vbox.addStretch(1)
 
-        card_view = CardView(HandModel(), card_spacing=50)
+        card_view = CardView(self.hand, card_spacing=50)
         vbox.addWidget(card_view)
 
 
