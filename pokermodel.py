@@ -61,21 +61,17 @@ class HandModel(Hand, CardModel):
         super().add_card(card)
         self.new_cards.emit()  # something changed, better emit the signal!
 
-
 class Player(QObject):
+
+    data_changed = pyqtSignal()
+
     def __init__(self, name):
-        super.__init__()
+        super().__init__()
         self.name = name
-        self.money = 200        #amount player starts with
 
-
-
-
-        
-
-
-
-
+    def set_active(self, active):
+        self.active = active
+        self.data_changed.emit()
 
 
 
@@ -84,32 +80,50 @@ class Player(QObject):
 #         return False
 
 
+
 class TexasHoldEm(QObject):
-    def __init__(self, names):
-        super.__init__()
-        self.players = [Player(name, 1000) for name in names]
+
+    data_changed = pyqtSignal()
+
+    game_message = pyqtSignal((str,))
+
+    def __init__(self, players):
+        super().__init__()
+        self.running = False
+        self.players = players
+        self.player_money = 1000
         self.deck = cardlib.StandardDeck()
         self.pot = 0
-        self.active_player = 0
+        self.active_player = -1
 
-    new_value = pyqtSignal()
-
-    def pot(self):
-        return self.pot
+    def player_money(self):
+        return self.player_money
 
     def new_round(self):
+        if self.running:
+            self.game_message.emit("A new round has already begun")
+        self.running = True
+        self.active_player = 0
         self.pot = 0
-
-    def fold(self):
-        player = self.players[self.active_player]
+        self.players[self.active_player].set_active(True)
+        self.data_changed.emit()
 
     def bet(self, amount: int):
-        player = self.players[self.active_player]
-        player.money -= amount
         self.pot += amount
-        self.new_value.emit()
+        self.player_money += amount
+
+        self.players[self.active_player].set_active(False)
+        self.active_player = (self.active_player + 1) % len(self.players)
+        self.players[self.active_player].set_active(True)
+        self.data_changed.emit()
+
 
     def call(self):
         player = self.players[self.active_player]
         pass
 
+    def pot(self):
+        return self.pot
+
+    def fold(self):
+        player = self.players[self.active_player]

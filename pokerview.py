@@ -107,11 +107,13 @@ class CardView(QGraphicsView):
         super().resizeEvent(painter)
 
 
+####
+
 class VerticalActionBar(QWidget):
-    def __init__(self, labels, game: TexasHoldEm):
+    def __init__(self, game):
         super().__init__()
         self.game = game
-        game.new_value.connect(self.update_value)
+        game.data_changed.connect(self.update_value)
 
         self.bet = QPushButton("Bet")
         self.call = QPushButton("Call")
@@ -125,66 +127,57 @@ class VerticalActionBar(QWidget):
         def actions():
             action_list = [game.bet(), game.call(), game.fold()]
 
-        for action in action_list:
-            self.action.clicked.connect(actions)
-
-
-
-class PlayerMoneyView(QLabel):
-    def __init__(self):
-        super().__init__()
-        #self.money_model = money_model
-        #self.starting_money = starting_money
-        self.setText('placeholder')
-
-    #def update_label(self, new_value):
-     #   self.setText(f"€{new_value}")
+            for action in action_list:
+                self.action.clicked.connect(actions)
 
 
 class ActionBar(QGroupBox):
-    def __init__(self):
+    def __init__(self, game):
         super().__init__()
-        label1 = QLabel()
-        label2 = QLabel()
+        self.game = game
+
+        pot = QLabel()
+        turn = QLabel()
         vbox = QVBoxLayout()
         vbox.addStretch(1)
-        vbox.addWidget(label1)
-        vbox.addWidget(label2)
+        vbox.addWidget(pot)
+        vbox.addWidget(turn)
         vbox.addWidget(VerticalActionBar())
-
-    self.setLayout(vbox)
-
-    self.setGeometry(300, 300, 300, 150)
-
-    def update_pot(self):
-        self.label1.setText("Pot\n" + str(self.game.pot()))
-
-####
-
-
-class PlayerView(QGroupBox):
-    def __init__(self, player: Player):
-        super().__init__("Player's name")
-        self.label = QLabel()
-        card_view = CardView(player.hand, card_spacing=50)
-        vbox = QVBoxLayout()
-        vbox.addStretch(1)
-        vbox.addWidget(self.label)
-        vbox.addWidget(card_view)
 
         self.setLayout(vbox)
 
+        self.setGeometry(300, 300, 300, 150)
+
+    def update_pot(self):
+        self.pot.setText("Pot\n" + str(self.game.pot()))
+
+
+class PlayerView(QGroupBox):
+    def __init__(self, player, game):
+        super().__init__(player.name)
+        self.player = player
+        self.label = QLabel()
+
+        vbox = QVBoxLayout()
+        self.setLayout(vbox)
+        vbox.addWidget(self.label)
+        vbox.addStretch(1)
+
+
+        #card_view = CardView(player.hand, card_spacing=50)
+        #vbox.addWidget(card_view)
+
+
+        # Connect logic:
+        self.game = game
+        self.update_money()
+
     def update_money(self):
-        self.label.setText("Money\n" + str(self.player.money()))
-
-
-
-
-
+        self.label.setText("Money\n" + str(self.game.player_money))
 
 
 class GameView(QWidget):
-    def __init__(self):
+    def __init__(self, game):
         super().__init__()
         hbox = QHBoxLayout()
         hand = HandModel()
@@ -195,33 +188,39 @@ class GameView(QWidget):
 
 
 class GraphicView(QGroupBox):
-    def __init__(self):
+    def __init__(self, game):
         super().__init__()
+        self.game = game
 
         vbox = QVBoxLayout()
-        vbox.addWidget(PlayerView())
-        vbox.addWidget(GameView())
-        vbox.addWidget(PlayerView())
+        self.setLayout(vbox)
         vbox.addStretch(1)
 
-        self.setLayout(vbox)
+        vbox.addWidget(PlayerView(game.players[0], game))
+        #vbox.addWidget(GameView(game))
+        vbox.addWidget(PlayerView(game.players[1], game))
+
 
 
 class MyWindow(QMainWindow):
-    def __init__(self, game: TexasHoldEm):
+    def __init__(self, game):
         super().__init__()
         widget = QWidget()
+        self.game = game
 
         layout = QHBoxLayout()
-       # layout.addWidget(GraphicView(TexasHoldEm))
-        layout.addWidget(ActionBar(game))
+        layout.addWidget(GraphicView(game))
+        #layout.addWidget(ActionBar(game))
         widget.setLayout(layout)
         self.setCentralWidget(widget)
 
+
 # pokergame.py:
 qt_app = QApplication(sys.argv)
-win = MyWindow()
+game = TexasHoldEm([Player("Maximilian"), Player("Axel")])
+win = MyWindow(game)
 win.show()
+
 qt_app.exec_()
 
 
