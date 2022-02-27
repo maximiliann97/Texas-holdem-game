@@ -61,6 +61,7 @@ class HandModel(Hand, CardModel):
         super().add_card(card)
         self.new_cards.emit()  # something changed, better emit the signal!
 
+
 class Player(QObject):
 
     data_changed = pyqtSignal()

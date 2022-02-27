@@ -157,11 +157,12 @@ class PlayerView(QGroupBox):
     def __init__(self, player, game):
         super().__init__(player.name)
         self.player = player
-        self.label = QLabel()
+        self.labels = [QLabel(), QLabel()]
 
         vbox = QVBoxLayout()
         self.setLayout(vbox)
-        vbox.addWidget(self.label)
+        vbox.addWidget(self.labels[0])
+        vbox.addWidget(self.labels[1])
         vbox.addStretch(1)
 
 
@@ -175,7 +176,8 @@ class PlayerView(QGroupBox):
         self.update_money()
 
     def update_money(self):
-        self.label.setText("Money\n" + str(self.game.player_money[game.active_player]))
+        for i in range(2):
+            self.labels[i].setText('Money\n {}' .format(self.game.player_money[i]))
 
 
 class GameView(QWidget):
@@ -196,7 +198,7 @@ class GraphicView(QGroupBox):
 
         vbox = QVBoxLayout()
         self.setLayout(vbox)
-        vbox.addStretch(1)
+
 
         vbox.addWidget(PlayerView(game.players[0], game))
         #vbox.addWidget(GameView(game))
