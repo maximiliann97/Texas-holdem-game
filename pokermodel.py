@@ -18,28 +18,28 @@ class CardModel(QObject):
 
 
 # A trivial card class (you should use the stuff you made in your library instead!
-class MySimpleCard:
-    def __init__(self, value, suit):
-        self.value = value
-        self.suit = suit
-
-    def get_value(self):
-        return self.value
+# class MySimpleCard:
+#     def __init__(self, value, suit):
+#         self.value = value
+#         self.suit = suit
+#
+#     def get_value(self):
+#         return self.value
 
 
 # You have made a class similar to this (hopefully):
-class Hand:
+# class Hand:
+#     def __init__(self):
+#         # Lets use some hardcoded values for most of this to start with
+#         self.cards = [MySimpleCard(13, 'H'), MySimpleCard(7, 'D'), MySimpleCard(13, 'S')]
+#
+#     def add_card(self, card):
+#         self.cards.append(card)
+
+
+class HandModel(cardlib.Hand, CardModel):
     def __init__(self):
-        # Lets use some hardcoded values for most of this to start with
-        self.cards = [MySimpleCard(13, 'H'), MySimpleCard(7, 'D'), MySimpleCard(13, 'S')]
-
-    def add_card(self, card):
-        self.cards.append(card)
-
-
-class HandModel(Hand, CardModel):
-    def __init__(self):
-        Hand.__init__(self)
+        cardlib.Hand.__init__(self)
         CardModel.__init__(self)
         # Additional state needed by the UI
         self.flipped_cards = False
@@ -73,7 +73,6 @@ class Player(QObject):
     def set_active(self, active):
         self.active = active
         self.data_changed.emit()
-
 
 
 # class TableModel(CardModel):

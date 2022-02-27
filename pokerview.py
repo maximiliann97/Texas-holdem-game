@@ -165,9 +165,8 @@ class PlayerView(QGroupBox):
         vbox.addWidget(self.labels[1])
         vbox.addStretch(1)
 
-
-        #card_view = CardView(player.hand, card_spacing=50)
-        #vbox.addWidget(card_view)
+        card_view = CardView(HandModel(), card_spacing=50)
+        vbox.addWidget(card_view)
 
 
         # Connect logic:
@@ -199,9 +198,8 @@ class GraphicView(QGroupBox):
         vbox = QVBoxLayout()
         self.setLayout(vbox)
 
-
         vbox.addWidget(PlayerView(game.players[0], game))
-        #vbox.addWidget(GameView(game))
+        vbox.addWidget(GameView(game))
         vbox.addWidget(PlayerView(game.players[1], game))
 
 
