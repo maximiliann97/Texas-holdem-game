@@ -109,47 +109,43 @@ class CardView(QGraphicsView):
 
 ####
 
-class VerticalActionBar(QWidget):
+class ActionBar(QGroupBox):
     def __init__(self, game):
         super().__init__()
-        self.game = game
-        game.data_changed.connect(self.update_value)
-
+        self.pot = QLabel()
         self.bet = QPushButton("Bet")
         self.call = QPushButton("Call")
         self.fold = QPushButton("Fold")
         vbox = QVBoxLayout()
-        vbox.addStretch(1)
-
+        vbox.addWidget(self.pot)
+        vbox.addWidget(self.bet)
+        vbox.addWidget(self.call)
+        vbox.addWidget(self.bet)
+        vbox.addWidget(self.fold)
         self.setLayout(vbox)
 
-        # Controller part
-        def actions():
-            action_list = [game.bet(), game.call(), game.fold()]
-
-            for action in action_list:
-                self.action.clicked.connect(actions)
-
-
-class ActionBar(QGroupBox):
-    def __init__(self, game):
-        super().__init__()
+        # Connect logic
         self.game = game
+        game.data_changed.connect(self.update_pot)
+        self.update_pot()
 
-        pot = QLabel()
-        turn = QLabel()
-        vbox = QVBoxLayout()
-        vbox.addStretch(1)
-        vbox.addWidget(pot)
-        vbox.addWidget(turn)
-        vbox.addWidget(VerticalActionBar())
+        def bet():
+            amount = 100
+            game.bet(amount)
+        self.bet.clicked.connect(bet)
 
-        self.setLayout(vbox)
+        def call():
+            game.call()
+        self.call.clicked.connect(call)
 
-        self.setGeometry(300, 300, 300, 150)
+        def fold():
+            game.fold()
+        self.fold.clicked.connect(fold)
 
     def update_pot(self):
-        self.pot.setText("Pot\n" + str(self.game.pot()))
+        self.pot.setText("Pot\n" + str(self.game.pot))
+
+
 
 
 class PlayerView(QGroupBox):
@@ -201,7 +197,6 @@ class GraphicView(QGroupBox):
         vbox.addWidget(PlayerView(game.players[1], game))
 
 
-
 class MyWindow(QMainWindow):
     def __init__(self, game):
         super().__init__()
@@ -210,7 +205,7 @@ class MyWindow(QMainWindow):
 
         layout = QHBoxLayout()
         layout.addWidget(GraphicView(game))
-        #layout.addWidget(ActionBar(game))
+        layout.addWidget(ActionBar(game))
         widget.setLayout(layout)
         self.setCentralWidget(widget)
 

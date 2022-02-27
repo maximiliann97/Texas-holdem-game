@@ -80,7 +80,6 @@ class Player(QObject):
 #         return False
 
 
-
 class TexasHoldEm(QObject):
 
     data_changed = pyqtSignal()
@@ -99,6 +98,9 @@ class TexasHoldEm(QObject):
     def player_money(self):
         return self.player_money
 
+    def pot(self):
+        return self.pot
+
     def new_round(self):
         if self.running:
             self.game_message.emit("A new round has already begun")
@@ -111,7 +113,6 @@ class TexasHoldEm(QObject):
     def bet(self, amount: int):
         self.pot += amount
         self.player_money += amount
-
         self.players[self.active_player].set_active(False)
         self.active_player = (self.active_player + 1) % len(self.players)
         self.players[self.active_player].set_active(True)
@@ -119,11 +120,7 @@ class TexasHoldEm(QObject):
 
 
     def call(self):
-        player = self.players[self.active_player]
         pass
 
-    def pot(self):
-        return self.pot
-
     def fold(self):
-        player = self.players[self.active_player]
+        pass
