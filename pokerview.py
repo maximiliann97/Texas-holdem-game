@@ -174,7 +174,7 @@ class PlayerView(QGroupBox):
         self.update_money()
 
     def update_money(self):
-        self.label.setText('Money\n {}' .format(self.player.money.value))
+        self.label.setText('Money\n$ {}' .format(self.player.money.value))
 
 
 class GameView(QWidget):

@@ -17,6 +17,24 @@ class CardModel(QObject):
         """Returns true of cards should be drawn face down"""
 
 
+class TableModel(CardModel):
+    def __init__(self):
+        CardModel.__init__(self)
+        self.cards = []
+
+    def __iter__(self):
+        return iter(self.cards)
+
+    def flipped(self):
+        # This model only flips all or no cards, so we don't care about the index.
+        # Might be different for other games though!
+        return False
+
+    def add_cards(self, cards):
+        self.cards.extend(cards)
+        self.new_cards.emit()  # something changed, better emit the signal!
+
+
 class HandModel(Hand, CardModel):
     def __init__(self):
         Hand.__init__(self)
@@ -45,9 +63,9 @@ class HandModel(Hand, CardModel):
 class MoneyModel(QObject):
     new_value = pyqtSignal()
 
-    def __init__(self):
+    def __init__(self, init_val=0):
         super().__init__()
-        self.value = 1000       # The amount players start with
+        self.value = init_val       # The amount players start with
 
     def __isub__(self, other):
         self.value -= other
@@ -59,13 +77,26 @@ class MoneyModel(QObject):
         self.new_value.emit()
         return self
 
+    def clear(self):
+        self.value = 0
+        self.new_value.emit()
+
 
 class Player(QObject):
     def __init__(self, name):
         super().__init__()
         self.name = name
         self.hand = HandModel()
-        self.money = MoneyModel()
+        self.money = MoneyModel(1000)
+        self.betted = MoneyModel()
+
+    def place_bet(self, amount):
+        self.money -= amount
+        self.betted += amount
+
+    def clear(self):
+        self.hand.clear()
+        self.betted.clear()
 
     def set_active(self, active):
         self.active = active
@@ -74,29 +105,32 @@ class Player(QObject):
 class TexasHoldEm(QObject):
 
     pot_changed = pyqtSignal()
-    card_data_changed = pyqtSignal()
     game_message = pyqtSignal((str,))
 
     def __init__(self, players):
         super().__init__()
         self.players = players
         self.new_round()
+        self.pot = MoneyModel()
+        self.table = TableModel()
 
-    def new_round(self):
+    def __new_round(self):
         self.active_player = 0
-        self.pot = 0
-        self.table = []
+        self.pot.clear()
+        self.table.clear()
         self.check_stepper = 0
         self.deck = StandardDeck()
         self.deck.shuffle()
         self.players[self.active_player].set_active(True)
-        self.card_data_changed.emit()
 
         for player in self.players:
-            player.hand.cards.clear()
+            player.clear()
             player.hand.add_card(self.deck.draw())
             player.hand.add_card(self.deck.draw())
             print(player.hand)
+
+        self.check()
+        self.card_data_changed.emit()
 
     def deal(self, number_of_cards: int):
         for card in range(number_of_cards):
@@ -110,23 +144,19 @@ class TexasHoldEm(QObject):
         elif self.check_stepper == 1 or self.check_stepper == 2:
             self.deal(1)
 
-    def player_money(self):
-        return self.players.money
-
-    def pot(self):
-        return self.pot
-
     def bet(self, amount: int):
         self.pot += amount
-        self.players[self.active_player].money -= amount
+        self.players[self.active_player].place_bet(amount)
         self.players[self.active_player].set_active(False)
         self.active_player = (self.active_player + 1) % len(self.players)
         self.players[self.active_player].set_active(True)
         self.pot_changed.emit()
 
-    def call(self, amount: int):
+    def call(self):
+        max_bet = max([player.betted.value for player in self.players])
+        amount = max_bet - self.players[self.active_player].betted.value
         self.pot += amount
-        self.players[self.active_player].money -= amount
+        self.players[self.active_player].place_bet(amount)
         self.players[self.active_player].set_active(False)
         self.active_player = (self.active_player + 1) % len(self.players)
         self.players[self.active_player].set_active(True)
