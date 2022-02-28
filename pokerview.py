@@ -31,11 +31,12 @@ def read_cards():
     :return: Dictionary of SVG renderers
     """
     all_cards = dict()  # Dictionaries let us have convenient mappings between cards and their images
-    for suit in "HDSC":  # You'll need to map your suits to the filenames here. You are expected to change this!
+    for suit_file, suit in zip('HSCD', Suit):
         for value_file, value in zip(['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'], range(2, 15)):
-            file = value_file + suit
+            file = value_file + suit_file
             key = (value, suit)  # I'm choosing this tuple to be the key for this dictionary
             all_cards[key] = QSvgRenderer('cards/' + file + '.svg')
+        #print(all_cards)
     return all_cards
 
 
@@ -118,7 +119,7 @@ class ActionBar(QGroupBox):
         self.fold = QPushButton("Fold")
         self.betting_amount = QSpinBox()
         self.betting_amount.setMaximum(1000)
-        self.betting_amount.setMinimum(50)
+        self.betting_amount.setMinimum(100)
 
         vbox = QVBoxLayout()
 
@@ -133,7 +134,8 @@ class ActionBar(QGroupBox):
 
         # Connect logic
         self.game = game
-        game.pot_changed.connect(self.update_pot)
+        game.pot.new_value.connect(self.update_pot)
+        game.game_message.connect(self.call_alert)
 
         self.update_pot()
 
@@ -150,7 +152,12 @@ class ActionBar(QGroupBox):
         self.fold.clicked.connect(fold)
 
     def update_pot(self):
-        self.pot.setText("Pot\n" + str(self.game.pot))
+        self.pot.setText("Pot\n" + str(self.game.pot.value))
+
+    def call_alert(self, text):
+        msg = QMessageBox()
+        msg.setText(text)
+        msg.exec()
 
 
 class PlayerView(QGroupBox):
@@ -164,9 +171,8 @@ class PlayerView(QGroupBox):
         vbox.addWidget(self.label)
         vbox.addStretch(1)
 
-        #hand_card_view = CardView(player.hand)
-        #vbox.addWidget(hand_card_view)
-
+        hand_card_view = CardView(player.hand)
+        vbox.addWidget(hand_card_view)
 
         # Connect logic:
         self.game = game

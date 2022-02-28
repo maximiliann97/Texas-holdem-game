@@ -31,8 +31,12 @@ class TableModel(CardModel):
         return False
 
     def add_cards(self, cards):
-        self.cards.extend(cards)
+        self.cards.append(cards)
         self.new_cards.emit()  # something changed, better emit the signal!
+
+    def clear(self):
+        self.cards = []
+        self.new_cards.emit()
 
 
 class HandModel(Hand, CardModel):
@@ -58,6 +62,9 @@ class HandModel(Hand, CardModel):
     def add_card(self, card):
         super().add_card(card)
         self.new_cards.emit()  # something changed, better emit the signal!
+
+    def clear(self):
+        pass
 
 
 class MoneyModel(QObject):
@@ -94,6 +101,9 @@ class Player(QObject):
         self.money -= amount
         self.betted += amount
 
+    def receive_pot(self, amount):
+        self.money += amount
+
     def clear(self):
         self.hand.clear()
         self.betted.clear()
@@ -104,15 +114,14 @@ class Player(QObject):
 
 class TexasHoldEm(QObject):
 
-    pot_changed = pyqtSignal()
     game_message = pyqtSignal((str,))
 
     def __init__(self, players):
         super().__init__()
         self.players = players
-        self.new_round()
         self.pot = MoneyModel()
         self.table = TableModel()
+        self.__new_round()
 
     def __new_round(self):
         self.active_player = 0
@@ -121,21 +130,20 @@ class TexasHoldEm(QObject):
         self.check_stepper = 0
         self.deck = StandardDeck()
         self.deck.shuffle()
+        self.deal(self.check_stepper)
         self.players[self.active_player].set_active(True)
 
         for player in self.players:
             player.clear()
             player.hand.add_card(self.deck.draw())
             player.hand.add_card(self.deck.draw())
-            print(player.hand)
 
         self.check()
-        self.card_data_changed.emit()
 
     def deal(self, number_of_cards: int):
         for card in range(number_of_cards):
-            self.table.append(self.deck.draw())
-        self.card_data_changed.emit()
+            self.table.add_cards(self.deck.draw())
+        self.table.new_cards.emit()
         self.check_stepper += 1
 
     def check(self):
@@ -150,26 +158,25 @@ class TexasHoldEm(QObject):
         self.players[self.active_player].set_active(False)
         self.active_player = (self.active_player + 1) % len(self.players)
         self.players[self.active_player].set_active(True)
-        self.pot_changed.emit()
 
     def call(self):
         max_bet = max([player.betted.value for player in self.players])
         amount = max_bet - self.players[self.active_player].betted.value
-        self.pot += amount
-        self.players[self.active_player].place_bet(amount)
-        self.players[self.active_player].set_active(False)
-        self.active_player = (self.active_player + 1) % len(self.players)
-        self.players[self.active_player].set_active(True)
-        self.pot_changed.emit()
+        if amount != 0:
+            self.pot += amount
+            self.players[self.active_player].place_bet(amount)
+            self.players[self.active_player].set_active(False)
+            self.active_player = (self.active_player + 1) % len(self.players)
+            self.players[self.active_player].set_active(True)
+        else:
+            self.game_message.emit("You cannot call!")
 
     def fold(self):
         self.players[self.active_player].set_active(False)
         self.active_player = (self.active_player + 1) % len(self.players)
         self.players[self.active_player].set_active(True)
-        self.players[self.active_player].money += self.pot
-        self.new_round()
-        self.pot_changed.emit()
-
+        self.players[self.active_player].receive_pot(self.pot)
+        self.__new_round()
 
 
 
