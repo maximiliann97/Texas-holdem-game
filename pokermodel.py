@@ -90,7 +90,10 @@ class MoneyModel(QObject):
         self.new_value.emit()
 
 
+
 class Player(QObject):
+    turn_swap = pyqtSignal()
+
     def __init__(self, name):
         super().__init__()
         self.name = name
@@ -111,6 +114,10 @@ class Player(QObject):
 
     def set_active(self, active):
         self.active = active
+
+    def show_active_player(self):
+        pass
+
 
 
 class TexasHoldEm(QObject):
@@ -153,7 +160,7 @@ class TexasHoldEm(QObject):
         elif self.check_stepper == 1 or self.check_stepper == 2:
             self.deal(1)
         else:
-            pass
+            self.check_round_winner()
 
         self.players[self.active_player].set_active(False)
         self.active_player = (self.active_player + 1) % len(self.players)
@@ -185,10 +192,13 @@ class TexasHoldEm(QObject):
         self.players[self.active_player].receive_pot(self.pot.value)
         self.__new_round()
 
+    def check_round_winner(self):
+        pass
+
     def loser(self):
         for player in self.players:
             if player.money.value <= 0:
-                self.game_message.emit(player.name + "is out of money!")
+                self.game_message.emit(player.name + " is out of money, game ends!")
                 quit()
 
 
