@@ -193,6 +193,14 @@ class GameView(QWidget):
 
         self.setLayout(hbox)
 
+        self.game = game
+        game.game_message.connect(self.loser_alert)
+
+    def loser_alert(self, text):
+        msg = QMessageBox()
+        msg.setText(text)
+        msg.exec_()
+
 
 class GraphicView(QGroupBox):
     def __init__(self, game):
