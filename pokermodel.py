@@ -64,7 +64,8 @@ class HandModel(Hand, CardModel):
         self.new_cards.emit()  # something changed, better emit the signal!
 
     def clear(self):
-        pass
+        self.cards = []
+        self.new_cards.emit()
 
 
 class MoneyModel(QObject):
@@ -124,6 +125,7 @@ class TexasHoldEm(QObject):
         self.__new_round()
 
     def __new_round(self):
+        self.loser()
         self.active_player = 0
         self.pot.clear()
         self.table.clear()
@@ -151,12 +153,11 @@ class TexasHoldEm(QObject):
         elif self.check_stepper == 1 or self.check_stepper == 2:
             self.deal(1)
         else:
-            self.loser()
+            pass
 
         self.players[self.active_player].set_active(False)
         self.active_player = (self.active_player + 1) % len(self.players)
         self.players[self.active_player].set_active(True)
-
 
     def bet(self, amount: int):
         self.pot += amount
@@ -181,13 +182,13 @@ class TexasHoldEm(QObject):
         self.players[self.active_player].set_active(False)
         self.active_player = (self.active_player + 1) % len(self.players)
         self.players[self.active_player].set_active(True)
-        self.players[self.active_player].receive_pot(self.pot)
+        self.players[self.active_player].receive_pot(self.pot.value)
         self.__new_round()
 
     def loser(self):
         for player in self.players:
             if player.money.value <= 0:
-                self.game_message.emit(player.name + ", you are out of money, you lost!")
+                self.game_message.emit(player.name + "is out of money!")
                 quit()
 
 

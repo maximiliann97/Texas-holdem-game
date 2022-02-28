@@ -116,6 +116,7 @@ class ActionBar(QGroupBox):
         self.pot = QLabel()
         self.bet = QPushButton("Bet")
         self.call = QPushButton("Call")
+        self.check = QPushButton("Check")
         self.fold = QPushButton("Fold")
         self.betting_amount = QSpinBox()
         self.betting_amount.setMaximum(1000)
@@ -127,6 +128,7 @@ class ActionBar(QGroupBox):
         vbox.addWidget(self.bet)
         vbox.addWidget(self.call)
         vbox.addWidget(self.bet)
+        vbox.addWidget(self.check)
         vbox.addWidget(self.fold)
         vbox.addWidget(self.betting_amount)
 
@@ -146,6 +148,10 @@ class ActionBar(QGroupBox):
         def call():
             game.call()
         self.call.clicked.connect(call)
+
+        def check():
+            game.check()
+        self.check.clicked.connect(check)
 
         def fold():
             game.fold()
