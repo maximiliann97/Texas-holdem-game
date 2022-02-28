@@ -42,29 +42,44 @@ class HandModel(Hand, CardModel):
         self.new_cards.emit()  # something changed, better emit the signal!
 
 
+class MoneyModel(QObject):
+    new_value = pyqtSignal()
+
+    def __init__(self):
+        super().__init__()
+        self.value = 1000       # The amount players start with
+
+    def __isub__(self, other):
+        self.value -= other
+        self.new_value.emit()
+        return self
+
+    def __iadd__(self, other):
+        self.value += other
+        self.new_value.emit()
+        return self
+
+
 class Player(QObject):
-
-    data_changed = pyqtSignal()
-
     def __init__(self, name):
         super().__init__()
         self.name = name
         self.hand = HandModel()
+        self.money = MoneyModel()
 
     def set_active(self, active):
         self.active = active
-        self.data_changed.emit()
 
 
 class TexasHoldEm(QObject):
 
-    data_changed = pyqtSignal()
+    pot_changed = pyqtSignal()
+    card_data_changed = pyqtSignal()
     game_message = pyqtSignal((str,))
 
     def __init__(self, players):
         super().__init__()
         self.players = players
-        self.player_money = [1000, 1000]
         self.new_round()
 
     def new_round(self):
@@ -75,7 +90,7 @@ class TexasHoldEm(QObject):
         self.deck = StandardDeck()
         self.deck.shuffle()
         self.players[self.active_player].set_active(True)
-        self.data_changed.emit()
+        self.card_data_changed.emit()
 
         for player in self.players:
             player.hand.cards.clear()
@@ -86,7 +101,7 @@ class TexasHoldEm(QObject):
     def deal(self, number_of_cards: int):
         for card in range(number_of_cards):
             self.table.append(self.deck.draw())
-        self.data_changed.emit()
+        self.card_data_changed.emit()
         self.check_stepper += 1
 
     def check(self):
@@ -96,35 +111,34 @@ class TexasHoldEm(QObject):
             self.deal(1)
 
     def player_money(self):
-        return self.player_money
+        return self.players.money
 
     def pot(self):
         return self.pot
 
     def bet(self, amount: int):
         self.pot += amount
-        self.player_money[self.active_player] -= amount
+        self.players[self.active_player].money -= amount
         self.players[self.active_player].set_active(False)
         self.active_player = (self.active_player + 1) % len(self.players)
         self.players[self.active_player].set_active(True)
-        self.data_changed.emit()
+        self.pot_changed.emit()
 
     def call(self, amount: int):
         self.pot += amount
-        self.player_money[self.active_player] -= amount
+        self.players[self.active_player].money -= amount
         self.players[self.active_player].set_active(False)
         self.active_player = (self.active_player + 1) % len(self.players)
         self.players[self.active_player].set_active(True)
-        self.data_changed.emit()
+        self.pot_changed.emit()
 
     def fold(self):
         self.players[self.active_player].set_active(False)
         self.active_player = (self.active_player + 1) % len(self.players)
         self.players[self.active_player].set_active(True)
-        self.player_money[self.active_player] += self.pot
-        self.data_changed.emit()
+        self.players[self.active_player].money += self.pot
         self.new_round()
-
+        self.pot_changed.emit()
 
 
 

@@ -2,7 +2,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtSvg import *
-import cardlib
+from cardlib import *
 import sys
 
 import pokermodel
@@ -31,7 +31,7 @@ def read_cards():
     :return: Dictionary of SVG renderers
     """
     all_cards = dict()  # Dictionaries let us have convenient mappings between cards and their images
-    for suit in 'HDSC':  # You'll need to map your suits to the filenames here. You are expected to change this!
+    for suit in "HDSC":  # You'll need to map your suits to the filenames here. You are expected to change this!
         for value_file, value in zip(['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'], range(2, 15)):
             file = value_file + suit
             key = (value, suit)  # I'm choosing this tuple to be the key for this dictionary
@@ -133,7 +133,7 @@ class ActionBar(QGroupBox):
 
         # Connect logic
         self.game = game
-        game.data_changed.connect(self.update_pot)
+        game.pot_changed.connect(self.update_pot)
 
         self.update_pot()
 
@@ -142,7 +142,7 @@ class ActionBar(QGroupBox):
         self.bet.clicked.connect(bet)
 
         def call():
-            game.call(self.game.pot)
+            game.call()
         self.call.clicked.connect(call)
 
         def fold():
@@ -157,27 +157,24 @@ class PlayerView(QGroupBox):
     def __init__(self, player, game):
         super().__init__(player.name)
         self.player = player
-        self.labels = [QLabel(), QLabel()]
-        self.hand = HandModel()
+        self.label = QLabel()
 
         vbox = QVBoxLayout()
         self.setLayout(vbox)
-        vbox.addWidget(self.labels[0])
-        vbox.addWidget(self.labels[1])
+        vbox.addWidget(self.label)
         vbox.addStretch(1)
 
-        hand_card_view = CardView(player.hand)
-        vbox.addWidget(hand_card_view)
+        #hand_card_view = CardView(player.hand)
+        #vbox.addWidget(hand_card_view)
 
 
         # Connect logic:
         self.game = game
-        game.data_changed.connect(self.update_money)
+        player.money.new_value.connect(self.update_money)
         self.update_money()
 
     def update_money(self):
-        for i in range(2):
-            self.labels[i].setText('Money\n {}' .format(self.game.player_money[i]))
+        self.label.setText('Money\n {}' .format(self.player.money.value))
 
 
 class GameView(QWidget):
@@ -185,8 +182,8 @@ class GameView(QWidget):
         super().__init__()
         hbox = QHBoxLayout()
         hand = HandModel()
-        label = CardView(game.table)
-        hbox.addWidget(label)
+       # label = CardView(game.table)
+       # hbox.addWidget(label)
 
         self.setLayout(hbox)
 
