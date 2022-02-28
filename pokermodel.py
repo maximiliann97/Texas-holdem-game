@@ -130,7 +130,6 @@ class TexasHoldEm(QObject):
         self.check_stepper = 0
         self.deck = StandardDeck()
         self.deck.shuffle()
-        self.deal(self.check_stepper)
         self.players[self.active_player].set_active(True)
 
         for player in self.players:

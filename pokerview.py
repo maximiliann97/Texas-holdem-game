@@ -188,8 +188,8 @@ class GameView(QWidget):
         super().__init__()
         hbox = QHBoxLayout()
         hand = HandModel()
-       # label = CardView(game.table)
-       # hbox.addWidget(label)
+        table_card_view = CardView(game.table)
+        hbox.addWidget(table_card_view)
 
         self.setLayout(hbox)
 
