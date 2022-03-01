@@ -90,7 +90,6 @@ class MoneyModel(QObject):
         self.new_value.emit()
 
 
-
 class Player(QObject):
     turn_swap = pyqtSignal()
 
@@ -116,8 +115,11 @@ class Player(QObject):
         self.active = active
 
     def show_active_player(self):
-        pass
-
+        if player.set_active is True:
+            self.active_state = 'Active'
+        else:
+            self.active_state = 'Inactive'
+        self.turn_swap.emit()
 
 
 class TexasHoldEm(QObject):
@@ -136,7 +138,7 @@ class TexasHoldEm(QObject):
         self.active_player = 0
         self.pot.clear()
         self.table.clear()
-        self.check_stepper = 0
+        self.check_counter = 0
         self.deck = StandardDeck()
         self.deck.shuffle()
         self.players[self.active_player].set_active(True)
@@ -152,15 +154,15 @@ class TexasHoldEm(QObject):
         for card in range(number_of_cards):
             self.table.add_cards(self.deck.draw())
         self.table.new_cards.emit()
-        self.check_stepper += 1
 
     def check(self):
-        if self.check_stepper == 0:
+        if self.check_counter == 0:
             self.deal(3)
-        elif self.check_stepper == 1 or self.check_stepper == 2:
+        elif self.check_counter == 2 or self.check_counter == 4:
             self.deal(1)
         else:
             self.check_round_winner()
+        self.check_counter += 1
 
         self.players[self.active_player].set_active(False)
         self.active_player = (self.active_player + 1) % len(self.players)

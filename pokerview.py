@@ -171,7 +171,7 @@ class PlayerView(QGroupBox):
         super().__init__(player.name)
         self.player = player
         self.label = QLabel()
-        self.active_label = QLabel("Active")
+        self.active_label = QLabel()
 
         vbox = QVBoxLayout()
         self.setLayout(vbox)
@@ -187,13 +187,13 @@ class PlayerView(QGroupBox):
         player.money.new_value.connect(self.update_money)
         player.turn_swap.connect(self.update_active_player)
         self.update_money()
+        self.update_active_player()
 
     def update_money(self):
         self.label.setText('Money\n$ {}' .format(self.player.money.value))
 
     def update_active_player(self):
-        self.label.setText()
-
+        self.active_label.setText(str(self.player.show_active_player))
 
 
 class GameView(QWidget):
