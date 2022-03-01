@@ -114,13 +114,6 @@ class Player(QObject):
     def set_active(self, active):
         self.active = active
 
-    def show_active_player(self):
-        if player.set_active is True:
-            self.active_state = 'Active'
-        else:
-            self.active_state = 'Inactive'
-        self.turn_swap.emit()
-
 
 class TexasHoldEm(QObject):
 
@@ -136,9 +129,9 @@ class TexasHoldEm(QObject):
     def __new_round(self):
         self.loser()
         self.active_player = 0
+        self.check_counter = 0
         self.pot.clear()
         self.table.clear()
-        self.check_counter = 0
         self.deck = StandardDeck()
         self.deck.shuffle()
         self.players[self.active_player].set_active(True)
@@ -160,7 +153,7 @@ class TexasHoldEm(QObject):
             self.deal(3)
         elif self.check_counter == 2 or self.check_counter == 4:
             self.deal(1)
-        else:
+        elif self.check_counter == 6:
             self.check_round_winner()
         self.check_counter += 1
 
@@ -195,7 +188,22 @@ class TexasHoldEm(QObject):
         self.__new_round()
 
     def check_round_winner(self):
-        pass
+        self.best_poker_hands = [player.hand.best_poker_hand(self.table) for player in self.players]
+
+        if self.best_poker_hands[0] > self.best_poker_hands[1]:
+            self.players[0].receive_pot(self.pot.value)
+            self.game_message.emit(players[0].name + 'won' + str(self.pot.value))
+
+        elif self.best_poker_hands[1] > self.best_poker_hands[0]:
+            self.players[1].receive_pot(self.pot.value)
+            self.game_message.emit(players[1].name + 'won' + str(self.pot.value))
+
+        else:
+            for player in self.players:
+                self.player[0].receive_pot(self.pot.value/2)
+
+        self.__new_round()
+
 
     def loser(self):
         for player in self.players:
