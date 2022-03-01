@@ -137,7 +137,6 @@ class ActionBar(QGroupBox):
         # Connect logic
         self.game = game
         game.pot.new_value.connect(self.update_pot)
-        game.game_message.connect(self.call_alert)
 
         self.update_pot()
 
@@ -159,11 +158,6 @@ class ActionBar(QGroupBox):
 
     def update_pot(self):
         self.pot.setText("Pot\n" + str(self.game.pot.value))
-
-    def call_alert(self, text):
-        msg = QMessageBox()
-        msg.setText(text)
-        msg.exec()
 
 
 class PlayerView(QGroupBox):
@@ -189,7 +183,6 @@ class PlayerView(QGroupBox):
         self.label.setText('Money\n$ {}' .format(self.player.money.value))
 
 
-
 class GameView(QWidget):
     def __init__(self, game):
         super().__init__()
@@ -201,9 +194,9 @@ class GameView(QWidget):
         self.setLayout(hbox)
 
         self.game = game
-        game.game_message.connect(self.loser_alert)
+        game.game_message.connect(self.game_alerts)
 
-    def loser_alert(self, text):
+    def game_alerts(self, text):
         msg = QMessageBox()
         msg.setText(text)
         msg.exec_()

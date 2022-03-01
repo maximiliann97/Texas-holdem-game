@@ -73,7 +73,7 @@ class MoneyModel(QObject):
 
     def __init__(self, init_val=0):
         super().__init__()
-        self.value = init_val       # The amount players start with
+        self.value = init_val
 
     def __isub__(self, other):
         self.value -= other
@@ -91,13 +91,12 @@ class MoneyModel(QObject):
 
 
 class Player(QObject):
-    turn_swap = pyqtSignal()
 
     def __init__(self, name):
         super().__init__()
         self.name = name
         self.hand = HandModel()
-        self.money = MoneyModel(1000)
+        self.money = MoneyModel(1000)   # Define the amount the players start with
         self.betted = MoneyModel()
 
     def place_bet(self, amount):
@@ -113,6 +112,9 @@ class Player(QObject):
 
     def set_active(self, active):
         self.active = active
+
+    def clear_money(self):
+        self.money.clear()
 
 
 class TexasHoldEm(QObject):
@@ -155,6 +157,7 @@ class TexasHoldEm(QObject):
             self.deal(1)
         elif self.check_counter == 6:
             self.check_round_winner()
+
         self.check_counter += 1
 
         self.players[self.active_player].set_active(False)
@@ -162,11 +165,14 @@ class TexasHoldEm(QObject):
         self.players[self.active_player].set_active(True)
 
     def bet(self, amount: int):
-        self.pot += amount
-        self.players[self.active_player].place_bet(amount)
-        self.players[self.active_player].set_active(False)
-        self.active_player = (self.active_player + 1) % len(self.players)
-        self.players[self.active_player].set_active(True)
+        if self.players[self.active_player].money.value <= 0:
+            self.game_message.emit("You are out of money")
+        else:
+            self.pot += amount
+            self.players[self.active_player].place_bet(amount)
+            self.players[self.active_player].set_active(False)
+            self.active_player = (self.active_player + 1) % len(self.players)
+            self.players[self.active_player].set_active(True)
 
     def call(self):
         max_bet = max([player.betted.value for player in self.players])
@@ -188,13 +194,13 @@ class TexasHoldEm(QObject):
         self.__new_round()
 
     def check_round_winner(self):
-        self.best_poker_hands = [player.hand.best_poker_hand(self.table) for player in self.players]
+        best_poker_hands = [player.hand.best_poker_hand(self.table) for player in self.players]
 
-        if self.best_poker_hands[0] > self.best_poker_hands[1]:
+        if best_poker_hands[0] > best_poker_hands[1]:
             self.players[0].receive_pot(self.pot.value)
             self.game_message.emit(players[0].name + 'won' + str(self.pot.value))
 
-        elif self.best_poker_hands[1] > self.best_poker_hands[0]:
+        elif best_poker_hands[1] > best_poker_hands[0]:
             self.players[1].receive_pot(self.pot.value)
             self.game_message.emit(players[1].name + 'won' + str(self.pot.value))
 
@@ -204,13 +210,11 @@ class TexasHoldEm(QObject):
 
         self.__new_round()
 
-
     def loser(self):
         for player in self.players:
             if player.money.value <= 0:
                 self.game_message.emit(player.name + " is out of money, game ends!")
                 quit()
-
 
 
 
