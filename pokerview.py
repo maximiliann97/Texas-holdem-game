@@ -125,6 +125,7 @@ class ActionBar(QGroupBox):
 
         vbox = QVBoxLayout()
 
+        # Adding widgets to action bar
         vbox.addWidget(self.active_label)
         vbox.addWidget(self.pot)
         vbox.addWidget(self.bet)
@@ -141,6 +142,7 @@ class ActionBar(QGroupBox):
         game.active_player_changed.connect(self.update_active_player)
         game.active_player_changed.connect(self.update_maximum_bet)
 
+        # Updates
         self.update_pot()
         self.update_active_player()
         self.update_maximum_bet()
