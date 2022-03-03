@@ -143,6 +143,9 @@ class TexasHoldEm(QObject):
             player.hand.add_card(self.deck.draw())
             player.hand.add_card(self.deck.draw())
 
+        self.change_active_player()
+        self.players[self.active_player].hand.flip()
+        self.change_active_player()
         self.check()
 
     def deal(self, number_of_cards: int):
@@ -157,9 +160,9 @@ class TexasHoldEm(QObject):
             self.deal(1)
         elif self.check_counter == 8:      # When all 5 cards is on the table and both players check, winner is checked.
             self.check_round_winner()
+            self.players[self.active_player].hand.flip()
 
         self.check_counter += 1
-
         self.change_active_player()
 
     def bet(self, amount: int):
@@ -185,6 +188,7 @@ class TexasHoldEm(QObject):
         self.players[self.active_player].receive_pot(self.pot.value)
         self.game_message.emit(self.players[self.active_player].name + ' won $ ' + str(self.pot.value))
         self.__new_round()
+        self.players[self.active_player].hand.flip()
 
     def check_round_winner(self):
         best_poker_hands = [player.hand.best_poker_hand(self.table.cards) for player in self.players]   # Saves both
@@ -215,8 +219,10 @@ class TexasHoldEm(QObject):
 
     def change_active_player(self):
         """
-        Method to change the player and show who's the active player
+        Method to change the player and show who's the active player, also saving the amount of money the active player
+        has, which is useful for setting a maximum bet in the view.
         """
+
         self.players[self.active_player].set_active(False)
         self.active_player = (self.active_player + 1) % len(self.players)
         self.players[self.active_player].set_active(True)
@@ -225,15 +231,11 @@ class TexasHoldEm(QObject):
             self.the_active_player_name = str(self.players[0].name) + '\'s turn'
             self.the_active_player_money = self.players[0].money.value
             self.active_player_changed.emit()
+            self.players[1].hand.flip()
+            self.players[0].hand.flip()
         else:
             self.the_active_player_name = str(self.players[1].name) + '\'s turn'
             self.the_active_player_money = self.players[1].money.value
             self.active_player_changed.emit()
-
-
-
-
-
-
-
-
+            self.players[0].hand.flip()
+            self.players[1].hand.flip()
