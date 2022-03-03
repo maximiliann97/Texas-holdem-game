@@ -139,7 +139,7 @@ class ActionBar(QGroupBox):
         # Connect logic
         self.game = game
         game.pot.new_value.connect(self.update_pot)
-        game.change_active_player.connect(self.update_active_player)
+        game.active_player_changed.connect(self.update_active_player)
 
         self.update_pot()
         self.update_active_player()
@@ -161,7 +161,7 @@ class ActionBar(QGroupBox):
         self.fold.clicked.connect(fold)
 
     def update_pot(self):
-        self.pot.setText("Pot\n" + str(self.game.pot.value))
+        self.pot.setText("Pot\n$ " + str(self.game.pot.value))
 
     def update_active_player(self):
         self.active_label.setText(str(self.game.the_active_player_name))
