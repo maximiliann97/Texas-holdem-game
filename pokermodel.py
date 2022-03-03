@@ -95,7 +95,7 @@ class Player(QObject):
         super().__init__()
         self.name = name
         self.hand = HandModel()
-        self.money = MoneyModel(1000)   # Define the amount the players start with
+        self.money = MoneyModel(1000)   # Define the amount of money the players start with
         self.betted = MoneyModel()
 
     def place_bet(self, amount):
@@ -118,8 +118,8 @@ class Player(QObject):
 
 class TexasHoldEm(QObject):
 
-    active_player_changed = pyqtSignal()
-    game_message = pyqtSignal((str,))
+    active_player_changed = pyqtSignal()    # Signal only handling when the active player is changed.
+    game_message = pyqtSignal((str,))       # Signal handling game messages
 
     def __init__(self, players):
         super().__init__()
@@ -127,10 +127,10 @@ class TexasHoldEm(QObject):
         self.active_player = 0
         self.pot = MoneyModel()
         self.table = TableModel()
-        self.__new_round()
+        self.__new_round()  # Initializes a new round when program is launched
 
     def __new_round(self):
-        self.loser()
+        self.loser()    # Checks if someone is out of money and therefore the game is ended.
         self.check_counter = 0
         self.pot.clear()
         self.table.clear()
@@ -151,11 +151,11 @@ class TexasHoldEm(QObject):
         self.table.new_cards.emit()
 
     def check(self):
-        if self.check_counter == 2:
+        if self.check_counter == 2:     # After both players checks the first time the flop is dealt
             self.deal(3)
-        elif self.check_counter == 4 or self.check_counter == 6:
+        elif self.check_counter == 4 or self.check_counter == 6:    # After both check again another card is dealt
             self.deal(1)
-        elif self.check_counter == 8:
+        elif self.check_counter == 8:      # When all 5 cards is on the table and both players check, winner is checked.
             self.check_round_winner()
 
         self.check_counter += 1
@@ -173,7 +173,7 @@ class TexasHoldEm(QObject):
     def call(self):
         max_bet = max([player.betted.value for player in self.players])
         amount = max_bet - self.players[self.active_player].betted.value
-        if amount != 0:
+        if amount != 0:     # Proceeds if a call is possible otherwise a message is provided.
             self.pot += amount
             self.players[self.active_player].place_bet(amount)
             self.change_active_player()
@@ -187,7 +187,8 @@ class TexasHoldEm(QObject):
         self.__new_round()
 
     def check_round_winner(self):
-        best_poker_hands = [player.hand.best_poker_hand(self.table.cards) for player in self.players]
+        best_poker_hands = [player.hand.best_poker_hand(self.table.cards) for player in self.players]   # Saves both
+        # player's best poker hands in a list
 
         if best_poker_hands[0] > best_poker_hands[1]:
             self.players[0].receive_pot(self.pot.value)
@@ -203,7 +204,8 @@ class TexasHoldEm(QObject):
             self.game_message.emit('Draw! Pot splits between both players')
 
         self.__new_round()
-        self.check_counter -= 1
+        self.check_counter -= 1     # Drops the check counter after the winner is determined to prevent only one
+        # check being required to show the flop thereafter.
 
     def loser(self):
         for player in self.players:
@@ -212,6 +214,9 @@ class TexasHoldEm(QObject):
                 quit()
 
     def change_active_player(self):
+        """
+        Method to change the player and show who's the active player
+        """
         self.players[self.active_player].set_active(False)
         self.active_player = (self.active_player + 1) % len(self.players)
         self.players[self.active_player].set_active(True)
