@@ -203,6 +203,7 @@ class TexasHoldEm(QObject):
             self.game_message.emit('Draw! Pot splits between both players')
 
         self.__new_round()
+        self.check_counter -= 1
 
     def loser(self):
         for player in self.players:
@@ -214,7 +215,6 @@ class TexasHoldEm(QObject):
         self.players[self.active_player].set_active(False)
         self.active_player = (self.active_player + 1) % len(self.players)
         self.players[self.active_player].set_active(True)
-
 
         if self.active_player == 0:
             self.the_active_player_name = str(self.players[0].name) + '\'s turn'
