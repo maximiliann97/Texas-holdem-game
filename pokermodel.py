@@ -91,7 +91,6 @@ class MoneyModel(QObject):
 
 
 class Player(QObject):
-
     def __init__(self, name):
         super().__init__()
         self.name = name
@@ -152,11 +151,11 @@ class TexasHoldEm(QObject):
         self.table.new_cards.emit()
 
     def check(self):
-        if self.check_counter == 0:
+        if self.check_counter == 2:
             self.deal(3)
-        elif self.check_counter == 2 or self.check_counter == 4:
+        elif self.check_counter == 4 or self.check_counter == 6:
             self.deal(1)
-        elif self.check_counter == 6:
+        elif self.check_counter == 8:
             self.check_round_winner()
 
         self.check_counter += 1
@@ -211,6 +210,7 @@ class TexasHoldEm(QObject):
                 quit()
 
     def change_active_player(self):
+        self.players[self.active_player].hand.flip()
         self.players[self.active_player].set_active(False)
         self.active_player = (self.active_player + 1) % len(self.players)
         self.players[self.active_player].set_active(True)

@@ -238,12 +238,4 @@ class MyWindow(QMainWindow):
         self.setCentralWidget(widget)
 
 
-# pokergame.py:
-qt_app = QApplication(sys.argv)
-game = TexasHoldEm([Player("Maximilian"), Player("Axel")])
-win = MyWindow(game)
-win.show()
-
-qt_app.exec_()
-
 
