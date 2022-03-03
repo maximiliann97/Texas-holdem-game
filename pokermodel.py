@@ -199,7 +199,8 @@ class TexasHoldEm(QObject):
 
         else:
             for player in self.players:
-                self.player.receive_pot(self.pot.value/2)
+                player.receive_pot(self.pot.value/2)
+            self.game_message.emit('Draw! Pot splits between both players')
 
         self.__new_round()
 
@@ -210,16 +211,16 @@ class TexasHoldEm(QObject):
                 quit()
 
     def change_active_player(self):
-        self.players[self.active_player].hand.flip()
         self.players[self.active_player].set_active(False)
         self.active_player = (self.active_player + 1) % len(self.players)
         self.players[self.active_player].set_active(True)
 
+
         if self.active_player == 0:
-            self.the_active_player_name = str(self.players[0].name) + ' is active'
+            self.the_active_player_name = str(self.players[0].name) + '\'s turn'
             self.active_player_changed.emit()
         else:
-            self.the_active_player_name = str(self.players[1].name) + ' is active'
+            self.the_active_player_name = str(self.players[1].name) + '\'s turn'
             self.active_player_changed.emit()
 
 
