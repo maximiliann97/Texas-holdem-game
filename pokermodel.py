@@ -119,18 +119,20 @@ class Player(QObject):
 
 class TexasHoldEm(QObject):
 
+    change_active_player = pyqtSignal()
     game_message = pyqtSignal((str,))
 
     def __init__(self, players):
         super().__init__()
         self.players = players
+        self.active_player = 0
         self.pot = MoneyModel()
         self.table = TableModel()
         self.__new_round()
+        self.set_active_player()
 
     def __new_round(self):
         self.loser()
-        self.active_player = 0
         self.check_counter = 0
         self.pot.clear()
         self.table.clear()
@@ -194,19 +196,19 @@ class TexasHoldEm(QObject):
         self.__new_round()
 
     def check_round_winner(self):
-        best_poker_hands = [player.hand.best_poker_hand(self.table) for player in self.players]
+        best_poker_hands = [player.hand.best_poker_hand(self.table.cards) for player in self.players]
 
         if best_poker_hands[0] > best_poker_hands[1]:
             self.players[0].receive_pot(self.pot.value)
-            self.game_message.emit(players[0].name + 'won' + str(self.pot.value))
+            self.game_message.emit(self.players[0].name + 'won' + str(self.pot.value))
 
         elif best_poker_hands[1] > best_poker_hands[0]:
             self.players[1].receive_pot(self.pot.value)
-            self.game_message.emit(players[1].name + 'won' + str(self.pot.value))
+            self.game_message.emit(self.players[1].name + 'won' + str(self.pot.value))
 
         else:
             for player in self.players:
-                self.player[0].receive_pot(self.pot.value/2)
+                self.player.receive_pot(self.pot.value/2)
 
         self.__new_round()
 
@@ -215,6 +217,15 @@ class TexasHoldEm(QObject):
             if player.money.value <= 0:
                 self.game_message.emit(player.name + " is out of money, game ends!")
                 quit()
+
+    def set_active_player(self):
+        if self.players[0].set_active:
+            self.the_active_player_name = str(self.players[0].name) + ' is active'
+            self.change_active_player.emit()
+        else:
+            self.the_active_player_name = str(self.players[1].name) + ' is active'
+            self.change_active_player.emit()
+
 
 
 

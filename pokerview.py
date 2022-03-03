@@ -114,6 +114,7 @@ class ActionBar(QGroupBox):
     def __init__(self, game):
         super().__init__()
         self.pot = QLabel()
+        self.active_label = QLabel()
         self.bet = QPushButton("Bet")
         self.call = QPushButton("Call")
         self.check = QPushButton("Check")
@@ -124,6 +125,7 @@ class ActionBar(QGroupBox):
 
         vbox = QVBoxLayout()
 
+        vbox.addWidget(self.active_label)
         vbox.addWidget(self.pot)
         vbox.addWidget(self.bet)
         vbox.addWidget(self.call)
@@ -137,8 +139,10 @@ class ActionBar(QGroupBox):
         # Connect logic
         self.game = game
         game.pot.new_value.connect(self.update_pot)
+        game.change_active_player.connect(self.update_active_player)
 
         self.update_pot()
+        self.update_active_player()
 
         def bet():
             game.bet(self.betting_amount.value())
@@ -159,6 +163,9 @@ class ActionBar(QGroupBox):
     def update_pot(self):
         self.pot.setText("Pot\n" + str(self.game.pot.value))
 
+    def update_active_player(self):
+        self.active_label.setText(str(self.game.the_active_player_name))
+
 
 class PlayerView(QGroupBox):
     def __init__(self, player, game):
@@ -168,6 +175,7 @@ class PlayerView(QGroupBox):
 
         vbox = QVBoxLayout()
         self.setLayout(vbox)
+
         vbox.addWidget(self.label)
         vbox.addStretch(1)
 
@@ -177,10 +185,12 @@ class PlayerView(QGroupBox):
         # Connect logic:
         self.game = game
         player.money.new_value.connect(self.update_money)
+
         self.update_money()
 
     def update_money(self):
         self.label.setText('Money\n$ {}' .format(self.player.money.value))
+
 
 
 class GameView(QWidget):
