@@ -113,6 +113,7 @@ class CardView(QGraphicsView):
 class ActionBar(QGroupBox):
     def __init__(self, game):
         super().__init__()
+        self.game = game
         self.pot = QLabel()
         self.active_label = QLabel()
         self.bet = QPushButton("Bet")
@@ -120,7 +121,6 @@ class ActionBar(QGroupBox):
         self.check = QPushButton("Check")
         self.fold = QPushButton("Fold")
         self.betting_amount = QSpinBox()
-        self.betting_amount.setMaximum(1000)
         self.betting_amount.setMinimum(100)
 
         vbox = QVBoxLayout()
@@ -137,12 +137,13 @@ class ActionBar(QGroupBox):
         self.setLayout(vbox)
 
         # Connect logic
-        self.game = game
         game.pot.new_value.connect(self.update_pot)
         game.active_player_changed.connect(self.update_active_player)
+        game.active_player_changed.connect(self.update_maximum_bet)
 
         self.update_pot()
         self.update_active_player()
+        self.update_maximum_bet()
 
         def bet():
             game.bet(self.betting_amount.value())
@@ -165,6 +166,9 @@ class ActionBar(QGroupBox):
 
     def update_active_player(self):
         self.active_label.setText(str(self.game.the_active_player_name))
+
+    def update_maximum_bet(self):
+        self.betting_amount.setMaximum(self.game.the_active_player_money)
 
 
 class PlayerView(QGroupBox):

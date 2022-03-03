@@ -223,9 +223,11 @@ class TexasHoldEm(QObject):
 
         if self.active_player == 0:
             self.the_active_player_name = str(self.players[0].name) + '\'s turn'
+            self.the_active_player_money = self.players[0].money.value
             self.active_player_changed.emit()
         else:
             self.the_active_player_name = str(self.players[1].name) + '\'s turn'
+            self.the_active_player_money = self.players[1].money.value
             self.active_player_changed.emit()
 
 
