@@ -121,6 +121,7 @@ class TexasHoldEm(QObject):
 
     active_player_changed = pyqtSignal()    # Signal only handling when the active player is changed.
     game_message = pyqtSignal((str,))       # Signal handling game messages
+    last_bet_changed = pyqtSignal()
 
     def __init__(self, players):
         super().__init__()
@@ -133,6 +134,7 @@ class TexasHoldEm(QObject):
     def __new_round(self):
         self.loser()    # Checks if someone is out of money and therefore the game is ended.
         self.check_counter = 0
+        self.last_bet = 50
         self.pot.clear()
         self.table.clear()
         self.deck = StandardDeck()
@@ -159,14 +161,14 @@ class TexasHoldEm(QObject):
         min_bet = min([player.betted.value for player in self.players])
         max_bet = max([player.betted.value for player in self.players])
         diff = max_bet - min_bet
-        if diff !=0:
-            self.game_message.emit("You cannot check")
+        if diff != 0:
+            self.game_message.emit("You cannot check, call or raise")
         else:
             if self.check_counter == 2:     # After both players checks the first time the flop is dealt
                 self.deal(3)
             elif self.check_counter == 4 or self.check_counter == 6:    # After both check again another card is dealt
                 self.deal(1)
-            elif self.check_counter == 8:      # When all 5 cards is on the table and both players check, winner is checked.
+            elif self.check_counter == 8:  # When all 5 cards is on the table and both players check, winner is checked.
                 self.check_round_winner()
                 self.players[self.active_player].hand.flip()
 
@@ -179,6 +181,9 @@ class TexasHoldEm(QObject):
         else:
             self.pot += amount
             self.players[self.active_player].place_bet(amount)
+            max_bet = max([player.betted.value for player in self.players])
+            self.last_bet = max_bet - self.players[self.active_player].betted.value
+            self.last_bet_changed.emit()
             self.change_active_player()
 
     def call(self):
