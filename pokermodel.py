@@ -143,6 +143,7 @@ class TexasHoldEm(QObject):
             player.hand.add_card(self.deck.draw())
             player.hand.add_card(self.deck.draw())
 
+        self.blind(self.players[self.active_player])
         self.change_active_player()
         self.players[self.active_player].hand.flip()
         self.change_active_player()
@@ -239,3 +240,9 @@ class TexasHoldEm(QObject):
             self.active_player_changed.emit()
             self.players[0].hand.flip()
             self.players[1].hand.flip()
+
+    def blind(self, blind_player):
+        self.pot += 50
+        blind_player.place_bet(50)
+
+
