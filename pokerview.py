@@ -116,17 +116,19 @@ class ActionBar(QGroupBox):
         self.game = game
         self.pot = QLabel()
         self.active_label = QLabel()
+        self.blind_label = QLabel()
         self.bet = QPushButton("Bet")
         self.call = QPushButton("Call")
         self.check = QPushButton("Check")
         self.fold = QPushButton("Fold")
         self.betting_amount = QSpinBox()
-        self.betting_amount.setMinimum(100)
+        self.betting_amount.setMinimum(50)
 
         vbox = QVBoxLayout()
 
         # Adding widgets to action bar
         vbox.addWidget(self.active_label)
+        vbox.addWidget(self.blind_label)
         vbox.addWidget(self.pot)
         vbox.addWidget(self.bet)
         vbox.addWidget(self.call)
@@ -141,11 +143,13 @@ class ActionBar(QGroupBox):
         game.pot.new_value.connect(self.update_pot)
         game.active_player_changed.connect(self.update_active_player)
         game.active_player_changed.connect(self.update_maximum_bet)
+        game.active_player_changed.connect(self.update_blind)
 
         # Updates
         self.update_pot()
         self.update_active_player()
         self.update_maximum_bet()
+        self.update_blind()
 
         def bet():
             game.bet(self.betting_amount.value())
@@ -171,6 +175,9 @@ class ActionBar(QGroupBox):
 
     def update_maximum_bet(self):
         self.betting_amount.setMaximum(self.game.the_active_player_money)
+
+    def update_blind(self):
+        self.blind_label.setText('Blind: ' + str(self.game.blind_player_text))
 
 
 class PlayerView(QGroupBox):

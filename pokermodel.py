@@ -244,5 +244,6 @@ class TexasHoldEm(QObject):
     def blind(self, blind_player):
         self.pot += 50
         blind_player.place_bet(50)
+        self.blind_player_text = blind_player.name
 
 
