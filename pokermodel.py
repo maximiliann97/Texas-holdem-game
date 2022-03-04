@@ -155,16 +155,20 @@ class TexasHoldEm(QObject):
         self.table.new_cards.emit()
 
     def check(self):
-        if self.check_counter == 2:     # After both players checks the first time the flop is dealt
-            self.deal(3)
-        elif self.check_counter == 4 or self.check_counter == 6:    # After both check again another card is dealt
-            self.deal(1)
-        elif self.check_counter == 8:      # When all 5 cards is on the table and both players check, winner is checked.
-            self.check_round_winner()
-            self.players[self.active_player].hand.flip()
+        min_bet = min([player.betted.value for player in self.players])
+        if min_bet <= 0:
+            self.game_message.emit("You cannot check")
+        else:
+            if self.check_counter == 2:     # After both players checks the first time the flop is dealt
+                self.deal(3)
+            elif self.check_counter == 4 or self.check_counter == 6:    # After both check again another card is dealt
+                self.deal(1)
+            elif self.check_counter == 8:      # When all 5 cards is on the table and both players check, winner is checked.
+                self.check_round_winner()
+                self.players[self.active_player].hand.flip()
 
-        self.check_counter += 1
-        self.change_active_player()
+            self.check_counter += 1
+            self.change_active_player()
 
     def bet(self, amount: int):
         if self.players[self.active_player].money.value <= 0:
@@ -244,6 +248,6 @@ class TexasHoldEm(QObject):
     def blind(self, blind_player):
         self.pot += 50
         blind_player.place_bet(50)
-        self.blind_player_text = blind_player.name
+        self.blind_player_name = blind_player.name
 
 
