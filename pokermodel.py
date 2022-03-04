@@ -121,7 +121,6 @@ class TexasHoldEm(QObject):
 
     active_player_changed = pyqtSignal()    # Signal only handling when the active player is changed.
     game_message = pyqtSignal((str,))       # Signal handling game messages
-    last_bet_changed = pyqtSignal()
 
     def __init__(self, players):
         super().__init__()
@@ -134,7 +133,6 @@ class TexasHoldEm(QObject):
     def __new_round(self):
         self.loser()    # Checks if someone is out of money and therefore the game is ended.
         self.check_counter = 0
-        self.last_bet = 50
         self.pot.clear()
         self.table.clear()
         self.deck = StandardDeck()
@@ -179,12 +177,21 @@ class TexasHoldEm(QObject):
         if self.players[self.active_player].money.value <= 0:
             self.game_message.emit("You are out of money")
         else:
+            max_bet = max([player.betted.value for player in self.players])
+            minimum_allowed_bet = max_bet - self.players[self.active_player].betted.value
+            # minimum_allowed_bet = self.allowed_bets()
+            if amount <= minimum_allowed_bet:
+                self.game_message.emit("Bet to low try again")
+                return
             self.pot += amount
             self.players[self.active_player].place_bet(amount)
-            max_bet = max([player.betted.value for player in self.players])
-            self.last_bet = max_bet - self.players[self.active_player].betted.value
-            self.last_bet_changed.emit()
             self.change_active_player()
+
+    def allowed_bets(self):
+        max_bet = max([player.betted.value for player in self.players])
+        minimum_allowed_bet = max_bet - self.players[self.active_player].betted.value
+        return minimum_allowed_bet, self.players[self.active_player].money.value
+
 
     def call(self):
         max_bet = max([player.betted.value for player in self.players])
