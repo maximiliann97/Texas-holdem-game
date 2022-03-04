@@ -97,6 +97,7 @@ class Player(QObject):
         self.hand = HandModel()
         self.money = MoneyModel(1000)   # Define the amount of money the players start with
         self.betted = MoneyModel()
+        self.previous_bet = MoneyModel()
 
     def place_bet(self, amount):
         self.money -= amount
@@ -143,8 +144,8 @@ class TexasHoldEm(QObject):
             player.hand.add_card(self.deck.draw())
             player.hand.add_card(self.deck.draw())
 
-        self.blind(self.players[self.active_player])
         self.change_active_player()
+        self.blind(self.players[self.active_player])
         self.players[self.active_player].hand.flip()
         self.change_active_player()
         self.check()
@@ -156,7 +157,9 @@ class TexasHoldEm(QObject):
 
     def check(self):
         min_bet = min([player.betted.value for player in self.players])
-        if min_bet <= 0:
+        max_bet = max([player.betted.value for player in self.players])
+        diff = max_bet - min_bet
+        if diff !=0:
             self.game_message.emit("You cannot check")
         else:
             if self.check_counter == 2:     # After both players checks the first time the flop is dealt
