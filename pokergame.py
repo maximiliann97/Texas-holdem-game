@@ -3,10 +3,8 @@ import sys
 
 
 def main():
-    player_1 = input("Player 1 enter your name: ", )
-    player_2 = input("Player 2 enter your name: ", )
     qt_app = QApplication(sys.argv)
-    game = TexasHoldEm([Player(player_1), Player(player_2)])
+    game = TexasHoldEm([Player('Maximilian'), Player('Axel')])
     win = MyWindow(game)
     win.show()
 
