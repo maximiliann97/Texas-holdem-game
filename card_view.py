@@ -5,8 +5,6 @@ from PyQt5.QtWidgets import *
 from abc import abstractmethod
 import sys
 
-# NOTE: This is just given as an example of how to use CardView.
-# It is expected that you will need to adjust things to make a game out of it. 
 
 ###################
 # Models
@@ -26,7 +24,7 @@ class CardModel(QObject):
         """Returns true of cards should be drawn face down"""
 
 
-# A trivial card class (you should use the stuff you made in your library instead!
+# A trivial card class
 class MySimpleCard:
     def __init__(self, value, suit):
         self.value = value
@@ -35,7 +33,6 @@ class MySimpleCard:
     def get_value(self):
         return self.value
 
-# You have made a class similar to this (hopefully):
 class Hand:
     def __init__(self):
         # Lets use some hardcoded values for most of this to start with
@@ -45,10 +42,6 @@ class Hand:
         self.cards.append(card)
 
 
-# We can extend this class to create a model, which updates the view whenever it has changed.
-# NOTE: You do NOT have to do it this way.
-# You might find it easier to make a Player-model, or a whole GameState-model instead.
-# This is just to make a small demo that you can use. You are free to modify
 class HandModel(Hand, CardModel):
     def __init__(self):
         Hand.__init__(self)
@@ -66,7 +59,6 @@ class HandModel(Hand, CardModel):
 
     def flipped(self):
         # This model only flips all or no cards, so we don't care about the index.
-        # Might be different for other games though!
         return self.flipped_cards
 
     def add_card(self, card):
@@ -99,10 +91,10 @@ def read_cards():
     :return: Dictionary of SVG renderers
     """
     all_cards = dict()  # Dictionaries let us have convenient mappings between cards and their images
-    for suit_file, suit in zip('HDSC', range(4)):  # Check the order of the suits here!!!
+    for suit_file, suit in zip('HDSC', range(4)):
         for value_file, value in zip(['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'], range(2, 15)):
             file = value_file + suit_file
-            key = (value, suit)  # I'm choosing this tuple to be the key for this dictionary
+            key = (value, suit)  # tuple to be the key for this dictionary
             all_cards[key] = QSvgRenderer('cards/' + file + '.svg')
     return all_cards
 
@@ -129,11 +121,8 @@ class CardView(QGraphicsView):
 
         self.model = card_model
         # Whenever the this window should update, it should call the "change_cards" method.
-        # This can, for example, be done by connecting it to a signal.
-        # The view can listen to changes:
+
         card_model.new_cards.connect(self.change_cards)
-        # It is completely optional if you want to do it this way, or have some overreaching Player/GameState
-        # call the "change_cards" method instead. z
 
         # Add the cards the first time around to represent the initial state.
         self.change_cards()
@@ -147,16 +136,16 @@ class CardView(QGraphicsView):
             renderer = self.back_card if self.model.flipped() else self.all_cards[graphics_key]
             c = CardItem(renderer, i)
 
-            # Shadow effects are cool!
+            # Shadow effects
             shadow = QGraphicsDropShadowEffect(c)
             shadow.setBlurRadius(10.)
             shadow.setOffset(5, 5)
-            shadow.setColor(QColor(0, 0, 0, 180))  # Semi-transparent black!
+            shadow.setColor(QColor(0, 0, 0, 180))  # Semi-transparent black
             c.setGraphicsEffect(shadow)
 
             # Place the cards on the default positions
             c.setPos(c.position * self.card_spacing, 0)
-            # We could also do cool things like marking card by making them transparent if we wanted to!
+            # We could also do cool things like marking card by making them transparent
             # c.setOpacity(0.5 if self.model.marked(i) else 1.0)
             self.scene.addItem(c)
 
@@ -172,7 +161,7 @@ class CardView(QGraphicsView):
 
     def resizeEvent(self, painter):
         # This method is called when the window is resized.
-        # If the widget is resize, we gotta adjust the card sizes.
+        # If the widget is resize, adjust the card sizes.
         # QGraphicsView automatically re-paints everything when we modify the scene.
         self.update_view()
         super().resizeEvent(painter)
